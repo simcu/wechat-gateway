@@ -2,6 +2,14 @@
 
 基于GRPC实现的网关组件,详细接口说明,请参照 Wechat.proto , 需要相关客户端代码,请自行学习GRPC.
 
+#### DOCKER部署说明: REPO: https://hub.docker.com/r/simcu/wechat-gateway
+
+将配置文件准备好,详细配置文件参照下方说明.
+
+将配置文件挂到 /home/appsettings.json 启动即可
+
+> docker run -d --name simcu-wechat-gateway -p 80:80 -p 50051:50051 -v /path/to/your/config.json:/home/appsettings.json simcu/wechat-gateway
+
 #### 微信平台配置说明:
 本组件可以完全独立于主业务系统和微信接口之间,使业务不需要关系微信侧相关的内容,网关启动后,会在80端口开启HTTP服务器监听微信的相关推送,并在50051(默认)端口开启客户端GRPC接口,需要在微信第三方平台中配置的内容如下:
 
