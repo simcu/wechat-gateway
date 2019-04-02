@@ -1,0 +1,355 @@
+﻿syntax = "proto3";
+
+package Grpcs.Gateway.Wechat;
+
+service Component {
+    //获取授权链接
+    rpc GetBindUrl(GetBindUrlRequest) returns (GetBindUrlResponse) {}
+    //获取公众号/小程序信息（本接口可以重建refreshToken）
+    rpc GetInfo(GetInfoRequest) returns (GetInfoResponse) {}
+    //使用CODE获取授权的AppId
+    rpc GetAppId(GetAppIdRequest) returns (GetAppIdResponse) {}
+}
+
+service Message {
+    //获取Event信息
+    rpc GetEvent(Empty) returns (stream MessageResponse) {}
+    //获取用户发送的信息
+    rpc GetUser(Empty) returns (stream MessageResponse) {}
+    //获取消息详情
+    rpc GetStatus(MessageStatusRequest) returns (MessageStatusResponse) {}
+    //发送文本消息
+    rpc SendText(SendTextRequest) returns (SendMessageResponse) {}
+    //发送图片消息
+    rpc SendImage(SendImageRequest) returns (SendMessageResponse) {}
+    //发送图文消息（小程序为Link消息）
+    rpc SendNews(SendNewsRequest) returns (SendMessageResponse) {}
+    //发送小程序卡片消息
+    rpc SendWxAppCard(SendWxAppCardRequest) returns (SendMessageResponse) {}
+    //获取模版列表
+    rpc GetTemplate(GetInfoRequest) returns (GetTemplateResponse) {}
+    //发送模版消息
+    rpc SendTemplate(SendTemplateRequest) returns (SendMessageResponse) {}
+    //取消消息(只有定时未开始的任务可以取消)
+    rpc Cancel(MessageStatusRequest) returns (Error) {}
+}
+
+service WxApp {
+    //获取小程序用户openId
+    rpc GetOpenId(GetOpenIdByCodeRequest) returns (GetOpenIdByCodeResponse) {}
+    //设置小程序服务域名
+    rpc SetServiceDomain(SetServiceDomainRequest) returns (Error) {}
+    //部署小程序
+    rpc Deploy(DeployRequest) returns (Error) {}
+    //生成参数二维码（临时）
+    rpc GetQrCode (GetQrCodeRequest) returns (GetQrCodeResponse) {}
+}
+
+service WxWeb {
+    //用户code链接获取
+    rpc GetAuthCodeUrl(GetAuthCodeUrlRequest) returns (GetAuthCodeUrlResponse) {}
+    //获取浏览器用户openId
+    rpc GetOpenId(GetOpenIdByCodeRequest) returns (GetOpenIdByCodeResponse) {}
+    //获取用户信息
+    rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+    //获取Js-Ticket
+    rpc GetJsTicket(GetJsTicketRequest) returns (GetJsTicketResponse) {}
+    //生成参数二维码（临时）
+    rpc GetQrCode (GetQrCodeRequest) returns (GetQrCodeResponse) {}
+    //设置菜单
+    rpc CreateMenu(CreateMenuRequest) returns (Error) {}
+    //删除菜单
+    rpc DeleteMenu(GetInfoRequest) returns (Error) {}
+    //获取模版列表
+    rpc GetImageList (GetImageListRequest) returns (GetImageListResponse) {}
+    //上传图片素材
+    rpc UploadImage (UploadImageRequest) returns (UploadImageResponse) {}
+    //删除图片素材
+    rpc DeleteImage (DeleteImageRequest) returns (Error) {}
+}
+
+//公共
+message Empty {}
+
+message Error {
+    int32 err_code = 1;
+    string err_msg = 2;
+}
+
+//平台部分
+message GetBindUrlRequest {
+    string redirect_url = 1;
+    bool use_mobile = 2;
+}
+
+message GetBindUrlResponse {
+    Error error = 1;
+    string url = 2;
+}
+
+message GetInfoRequest {
+    string app_id = 1;
+}
+
+message GetInfoResponse {
+    Error error = 1;
+    string user_name = 2;
+    string nick_name = 3;
+    string head_img = 4;
+    string principal_name = 5;
+    string alias = 6;
+    int32 service_type_info = 7;
+    int32 verify_type_info = 8;
+    string qrcode_url = 9;
+    repeated int32 permissions = 10;
+    string app_id = 11;
+    string type = 12;
+}
+
+message GetAppIdRequest {
+    string code = 1;
+}
+
+message GetAppIdResponse {
+    Error error = 1;
+    string app_id = 2;
+}
+
+//消息部分
+message MessageResponse {
+    Error error = 1;
+    string type = 2;
+    string app_id = 3;
+    string open_id = 4;
+    int32  time = 5;
+    string content = 6;
+}
+
+message MessageStatusRequest {
+    string message_id = 1;
+    bool detail = 2;
+}
+
+message MessageStatusResponse {
+    enum Status {
+        PENDING = 0;
+        PROCESSING = 1;
+        FINISHED = 2;
+    }
+    Error error = 1;
+    Status status = 2;
+    int32 total_num = 3;
+    int32 success_num = 4;
+    int32 user_block_num = 5;
+    int32 system_failed_num = 6;
+    int32 send_error_num = 7;
+    int32 send_time = 8;
+    repeated string success_list = 9;
+    repeated string user_block_list = 10;
+    repeated string system_failed_list = 11;
+    repeated string send_error_list = 12;
+}
+
+message GetTemplateResponse {
+    message ListItem {
+        string template_id = 1;
+        string title = 2;
+        string primary_industry = 3;
+        string deputy_industry = 4;
+        string content = 5;
+        string example = 6;
+    }
+    Error error = 1;
+    repeated ListItem template_list = 2;
+}
+
+message TargetItem {
+    message Replacer {
+        string key = 1;
+        string value = 2;
+    }
+    string open_id = 1;
+    repeated Replacer data = 2;
+}
+    
+message SendTemplateRequest {
+    message DataItem {
+        string key = 1;
+        string value = 2;
+        string color = 3;
+    }
+   
+    string app_id = 1;
+    repeated TargetItem targets = 2;
+    string template_id = 3;
+    string form_id = 4;
+    string url = 5;
+    repeated DataItem data = 6;
+    int32 time = 7;
+    bool no_status = 8;
+    bool high_priority = 9;
+}
+
+message SendTextRequest {
+    string app_id = 1;
+    repeated TargetItem targets = 2;
+    string content = 3;
+    int32 time = 4;
+    bool no_status = 5;
+    bool high_priority = 6;
+}
+
+message SendImageRequest {
+    string app_id = 1;
+    repeated TargetItem targets = 2;
+    string image_id = 3;
+    int32 time = 4;
+    bool no_status = 5;
+    bool high_priority = 6;
+}
+
+message SendNewsRequest {
+    string app_id = 1;
+    repeated TargetItem targets = 2;
+    string image = 3;
+    string title = 4;
+    string description = 5;
+    string link = 6;
+    int32 time = 7;
+    bool no_status = 8;
+    bool high_priority = 9;
+}
+
+message SendWxAppCardRequest {
+    string app_id = 1;
+    repeated TargetItem targets = 2;
+    string title = 3;
+    string wx_app_id = 4;
+    string page_path = 5;
+    string image_id = 6;
+    int32 time = 7;
+    bool no_status = 8;
+    bool high_priority = 9;
+}
+
+message SendMessageResponse {
+    Error error = 1;
+    string message_id = 2;
+    int32 send_time = 3;
+}
+
+//WxApp部分
+message SetServiceDomainRequest {
+    string app_id = 1;
+    repeated string request_domain = 2;
+    repeated string ws_request_domain = 3;
+    repeated string upload_domain = 4;
+    repeated string downloaddomain_domain = 5;
+    repeated string webview_domain = 6;
+}
+
+message DeployRequest {
+    string app_id = 1;
+    int32 template_id = 2;
+    string user_version = 3;
+    string user_desc = 4;
+}
+
+//WxWeb部分
+message GetOpenIdByCodeRequest {
+    string app_id = 1;
+    string code = 2;
+}
+
+message GetOpenIdByCodeResponse {
+    Error error = 1;
+    string open_id = 2;
+    string secret_key = 3;
+}
+
+message GetUserInfoRequest {
+    string app_id = 1;
+    string open_id = 2;
+}
+
+message GetUserInfoResponse {
+    Error error = 1;
+    int32 subscribe_time = 2;
+    string open_id = 3;
+    string nick_name = 4;
+    int32 sex = 5;
+    string country = 6;
+    string province = 7;
+    string city = 8;
+    string photo = 9;
+    string union_id = 10;
+}
+
+message CreateMenuRequest {
+    string app_id = 1;
+    string config = 2;
+}
+
+message GetAuthCodeUrlRequest {
+    string app_id = 1;
+    string redirect_url = 2;
+}
+
+message GetAuthCodeUrlResponse {
+    Error error = 1;
+    string url = 2;
+}
+
+message GetJsTicketRequest {
+    string app_id = 1;
+}
+
+message GetJsTicketResponse {
+    Error error = 1;
+    string js_ticket = 2;
+}
+
+message UploadImageRequest {
+    string app_id = 1;
+    bytes file = 2; 
+}
+
+message UploadImageResponse {
+    Error error = 1;
+    string image_id = 2;
+    string url = 3;
+}
+
+message DeleteImageRequest {
+    string app_id = 1;
+    string image_id = 2;
+}
+
+message GetImageListRequest {
+    string app_id = 1;
+    int32 page = 2;
+}
+
+message ImageItem {
+    string image_id = 1;
+    int32 update_time = 2;
+    string url = 3;
+}
+
+message GetImageListResponse {
+    Error error = 1;
+    int32 total = 2;
+    repeated ImageItem list = 3;
+}
+
+message GetQrCodeRequest {
+    string app_id = 1;
+    string data = 2;
+}
+
+message GetQrCodeResponse {
+    Error error = 1;
+    string image_url = 2;
+    string qrcode_url = 3;
+    int32 expired = 4;
+}
