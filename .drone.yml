@@ -4,6 +4,8 @@ name: default
 steps:
 - name: code-analysis
   image: aosapps/drone-sonar-plugin
+  environment:
+    DRONE_REPO: simcu_wechat-gateway
   settings:
       sonar_host:
         from_secret: sonar_host
